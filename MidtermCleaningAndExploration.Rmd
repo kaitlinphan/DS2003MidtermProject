@@ -36,7 +36,7 @@ summed_vg_1 <- vg_past20years %>%
   summarize(Sales = sum(Sales)) 
 summed_vg_1 %>%
   ggplot(aes(x=Genre, y=Sales, group = Region, color=Region)) +
-    geom_bar(stat='identity') +
+    geom_bar(stat='identity', position='dodge') +
   theme(axis.text.x = 
           element_text(angle = 90)) +
   ylab('Sales ($ in mil)')
