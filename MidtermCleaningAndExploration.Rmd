@@ -6,6 +6,7 @@ date: "2023-02-22"
 
 ```{r setup, include=FALSE}
 knitr::opts_chunk$set(echo = TRUE)
+library(tidyverse)
 ```
 
 ```{r}
@@ -15,5 +16,43 @@ summary(vgsales)
 ```
 ```{r}
 vgsales$Year <- as.numeric(vgsales$Year)
+summary(vgsales)
+```
+
+```{r}
+vg_past20years <- vgsales %>% 
+  filter(Year %in% (2010:2020))
+vg_past20years
+```
+```{r}
+vg_past20years <- vg_past20years %>%
+  summarize(Year, Genre, JP_Sales, NA_Sales, EU_Sales, Other_Sales, Global_Sales) %>%
+  pivot_longer((!Year & !Genre), names_to = 'Region', values_to = 'Sales') 
+head(vg_past20years)
+```
+```{r}
+summed_vg_1 <- vg_past20years %>%
+  group_by(Genre, Region) %>%
+  summarize(Sales = sum(Sales)) 
+summed_vg_1 %>%
+  ggplot(aes(x=Genre, y=Sales, group = Region, color=Region)) +
+    geom_bar(stat='identity') +
+  theme(axis.text.x = 
+          element_text(angle = 90)) +
+  ylab('Sales ($ in mil)')
+```
+
+```{r}
+
+ggplot() + 
+  geom_bar(data = , aes(x = Genre, y = Global.Sales, fill = Rating.type), 
+           stat = "Identity", position = "dodge") +
+  scale_colour_manual("Score", breaks = "Avg.Critic.Score", values = "yellow") + 
+  scale_shape_manual("Score", values = 19) +   # Add scale for line and point plot
+  theme(axis.text.x = element_text(angle = 90), 
+        legend.position = "bottom",
+        panel.background = element_rect(fill = "black"),
+        panel.grid.major = element_blank(),
+        panel.grid.minor = element_blank()) 
 ```
 
