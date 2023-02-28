@@ -1,0 +1,63 @@
+---
+title: "DS_2003_midterm"
+author: "Matthew Spalthoff"
+date: "2023-02-22"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+```{r}
+library(tidyverse)
+library(ggridges)
+```
+
+```{r}
+vgsales = read.csv("C:/Users/matth/OneDrive/Documents/UVA/Third Year/DS 2003/vgsales.csv")
+vgsales$Year = as.numeric(vgsales$Year)
+
+sum(is.na(vgsales$Year))
+
+summary(vgsales)
+str(vgsales)
+
+table(vgsales$Platform)
+nrow(table(vgsales$Platform))
+
+table(vgsales$Genre)
+```
+
+```{r}
+vgsales_year = subset(vgsales, Year <= 2015 & Year >= 1990)
+vg_pub = data.frame(table(vgsales_year$Publisher))
+nrow(table(vgsales$Publisher))
+vg_pub = vg_pub[order(-vg_pub$Freq), ]
+vg_pub = vg_pub[c(1:21),]
+vg_pub = vg_pub[-17, ]
+
+vgsales_pub = vgsales_year[vgsales_year$Publisher %in% vg_pub$Var1, ]
+
+vg_pub_10 = vg_pub[c(1:10),]
+
+vgsales_pub_10 = vgsales_year[vgsales_year$Publisher %in% vg_pub_10$Var1, ]
+
+p1 = ggplot(vgsales_pub, aes(x = Year, y = Global_Sales, fill = Publisher)) + 
+  geom_line(aes(color = Publisher)) # + 
+  #geom_point(aes(color = Publisher, alpha = 0.01))
+p1
+
+vgsales_pub_factor_year = vgsales_pub
+vgsales_pub_factor_year$Year = as.factor(vgsales_pub_factor_year$Year)
+
+vgsales_pub_binned = vgsales_pub
+vgsales_pub_binned = vgsales_pub_binned %>% mutate(year_bin_5 = ntile(Year, n = 5))
+vgsales_pub_binned$year_bin_5 = as.factor(vgsales_pub_binned$year_bin_5)
+
+p2 = ggplot(vgsales_pub_binned, aes(x = Global_Sales, y = Publisher, fill = year_bin_5)) + 
+  geom_density_ridges(scale = 3, alpha = 0.4)
+p2
+```
+
+
