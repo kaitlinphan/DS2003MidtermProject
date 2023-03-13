@@ -1,0 +1,90 @@
+---
+title: "Midterm project"
+output:
+  pdf_document: default
+  html_document: default
+keep_md: yes
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(dev = "png",
+                      dpi = 300,
+                      echo = FALSE,
+                      cache = TRUE)
+```
+
+## R Markdown
+
+This is an R Markdown document. Markdown is a simple formatting syntax for authoring HTML, PDF, and MS Word documents. For more details on using R Markdown see <http://rmarkdown.rstudio.com>.
+
+When you click the **Knit** button a document will be generated that includes both content as well as the output of any embedded R code chunks within the document. You can embed an R code chunk like this:
+
+
+Note that the `echo = FALSE` parameter was added to the code chunk to prevent printing of the R code that generated the plot.
+```{r}
+setwd("C:/Users/renee/Desktop/DS2003/midterm project")
+library(tidyverse)
+library(ggplot2)
+```
+
+
+```{r}
+vgsales <- read.csv('vgsales.csv')
+as.data.frame(vgsales)
+sum(is.na(vgsales))
+na.omit(vgsales)
+as.numeric(vgsales$Year)
+head(vgsales)
+summary(vgsales)
+```
+
+
+```{r}
+#
+vg_pub = subset(vgsales, (Rank <= 50 & Year >= 2000), select = c(Publisher, NA_Sales, EU_Sales, JP_Sales, Other_Sales, Global_Sales, Year))
+
+
+
+preset_jitter <- position_jitter(0.05, seed = 123) # how much noise
+
+
+#can add back color by year if group thinks that's better
+ggplot(vg_pub, aes(Publisher,NA_Sales)) + geom_boxplot() + geom_point(position = preset_jitter) + theme_bw() + theme(axis.text.x = element_text(angle = 90, vjust = 0.5, hjust=1)) + labs(title="Distribution of North American Sales by Publisher for Top 50 Games by Sales",  subtitle = '2001-2015',caption = "Red line represents mean of total North American sales", y = "North American Sales (millions)") + geom_hline(aes(yintercept=mean(vg_pub$NA_Sales)), color="red", linetype="dashed")
+
+
+ggplot(vg_pub, aes(Publisher,NA_Sales)) + geom_violin() + geom_point(aes(color = Year),position = preset_jitter) + theme_bw() + theme(axis.text.x = element_text(angle = 90, vjust = 0.5, hjust=1)) + labs(title="Distribution of North American Sales by Publisher for Top 50 Games by Sales",  subtitle = '2001-2015',caption = "Red line represents mean of total North American sales", y = "North American Sales (millions)") + geom_hline(aes(yintercept=mean(vg_pub$NA_Sales)), color="red", linetype="dashed")
+
+
+
+```
+
+
+```{r}
+ggplot(vg_pub, aes(Publisher,EU_Sales)) + geom_boxplot() + geom_point(aes(color = Year), position = preset_jitter) + theme_bw()+ theme(axis.text.x = element_text(angle = 90, vjust = 0.5, hjust=1))+ labs(title="Distribution of European Sales by Publisher for Top 50 Games by Sales",  subtitle = '2001-2015',caption = "Red line represents mean of total European sales", y = "European Sales (millions)") + geom_hline(aes(yintercept=mean(vg_pub$EU_Sales)), color="red", linetype="dashed")
+
+ggplot(vg_pub, aes(Publisher,EU_Sales)) + geom_violin() + geom_point(aes(color = Year), position = preset_jitter) + theme_bw() + theme(axis.text.x = element_text(angle = 90, vjust = 0.5, hjust=1))+ labs(title="Distribution of European Sales by Publisher for Top 50 Games by Sales", y = "European Sales")+ labs(title="Distribution of European Sales by Publisher for Top 50 Games by Sales",caption = "Red line represents mean of total European sales", y = "European Sales (millions)") + geom_hline(aes(yintercept=mean(vg_pub$EU_Sales)), color="red", linetype="dashed")
+```
+
+
+```{r}
+ggplot(vg_pub, aes(Publisher,JP_Sales)) + geom_boxplot() + geom_point(aes(color = Year), position = preset_jitter) + theme_bw()+ theme(axis.text.x = element_text(angle = 90, vjust = 0.5, hjust=1)) + labs(title="Distribution of Japanese Sales by Publisher for Top 50 Games by Sales",  subtitle = '2001-2015',caption = "Red line represents mean of total Japanese sales", y = "Japanese Sales (millions)") + geom_hline(aes(yintercept=mean(vg_pub$JP_Sales)), color="red", linetype="dashed")
+
+ggplot(vg_pub, aes(Publisher,JP_Sales)) + geom_violin() + geom_point(aes(color = Year), position = preset_jitter) + theme_bw()+ theme(axis.text.x = element_text(angle = 90, vjust = 0.5, hjust=1)) + labs(title="Distribution of Japanese Sales by Publisher for Top 50 Games by Sales",  subtitle = '2001-2015',caption = "Red line represents mean of total Japanese sales", y = "Japanese Sales (millions)") + geom_hline(aes(yintercept=mean(vg_pub$JP_Sales)), color="red", linetype="dashed") #+ geom_hline(aes(yintercept=median(vg_pub$JP_Sales)), color="red", linetype="dashed")
+
+```
+
+
+
+```{r}
+ggplot(vg_pub, aes(Publisher,Other_Sales)) + geom_boxplot() + geom_point(aes(color = Year), position = preset_jitter) + theme_bw()+ theme(axis.text.x = element_text(angle = 90, vjust = 0.5, hjust=1)) + labs(title="Distribution of Other Sales by Publisher for Top 50 Games by Sales",  subtitle = '2001-2015',caption = "Red line represents mean of total other sales (excludes North America, Europe, and Japan)", y = "Other Sales (millions)") + geom_hline(aes(yintercept=mean(vg_pub$Other_Sales)), color="red", linetype="dashed")
+
+ggplot(vg_pub, aes(Publisher,Other_Sales)) + geom_violin() + geom_point(aes(color = Year), position = preset_jitter) + theme_bw()+ theme(axis.text.x = element_text(angle = 90, vjust = 0.5, hjust=1)) + labs(title="Distribution of Other Sales by Publisher for Top 50 Games by Sales",  subtitle = '2001-2015',caption = "Red line represents mean of total other sales (excludes North America, Europe, and Japan)", y = "Other Sales (millions)") + geom_hline(aes(yintercept=mean(vg_pub$Other_Sales)), color="red", linetype="dashed")
+```
+
+
+```{r}
+ggplot(vg_pub, aes(Publisher,Global_Sales)) + geom_boxplot() + geom_point(aes(color = Year), position = preset_jitter) + theme_bw()+ theme(axis.text.x = element_text(angle = 90, vjust = 0.5, hjust=1)) + labs(title="Distribution of Global Sales by Publisher for Top 50 Games by Sales",  subtitle = '2001-2015',caption = "Red line represents mean of total global sales", y = "Global Sales (millions)") + geom_hline(aes(yintercept=mean(vg_pub$Global_Sales)), color="red", linetype="dashed")
+
+ggplot(vg_pub, aes(Publisher,Global_Sales)) + geom_violin() + geom_point(aes(color = Year), position = preset_jitter) + theme_bw()+ theme(axis.text.x = element_text(angle = 90, vjust = 0.5, hjust=1)) + labs(title="Distribution of Global Sales by Publisher for Top 50 Games by Sales",  subtitle = '2001-2015',caption = "Red line represents mean of total global sales", y = "Global Sales (millions)") + geom_hline(aes(yintercept=mean(vg_pub$Global_Sales)), color="red", linetype="dashed")
+```
+
