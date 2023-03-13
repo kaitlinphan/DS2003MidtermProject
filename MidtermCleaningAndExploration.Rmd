@@ -21,7 +21,7 @@ summary(vgsales)
 
 ```{r}
 vg_past20years <- vgsales %>% 
-  filter(Year %in% (2010:2020))
+  filter(Year %in% (2000:2020))
 vg_past20years
 ```
 ```{r}
@@ -35,24 +35,15 @@ summed_vg_1 <- vg_past20years %>%
   group_by(Genre, Region) %>%
   summarize(Sales = sum(Sales)) 
 summed_vg_1 %>%
-  ggplot(aes(x=Genre, y=Sales, group = Region, color=Region)) +
+  ggplot(aes(x=Genre, y=Sales, group = Region, fill=Region)) +
     geom_bar(stat='identity', position='dodge') +
-  theme(axis.text.x = 
-          element_text(angle = 90)) +
-  ylab('Sales ($ in mil)')
+  ylab('Sales ($ in million)') +
+  theme_bw() +
+  theme(axis.text.x = element_text(angle = 90, vjust = 0.5, hjust=1)) +
+  labs(title = "Sales of Video Games of Different Genres by Region", subtitle ="2000-2020")
 ```
 
 ```{r}
 
-ggplot() + 
-  geom_bar(data = , aes(x = Genre, y = Global.Sales, fill = Rating.type), 
-           stat = "Identity", position = "dodge") +
-  scale_colour_manual("Score", breaks = "Avg.Critic.Score", values = "yellow") + 
-  scale_shape_manual("Score", values = 19) +   # Add scale for line and point plot
-  theme(axis.text.x = element_text(angle = 90), 
-        legend.position = "bottom",
-        panel.background = element_rect(fill = "black"),
-        panel.grid.major = element_blank(),
-        panel.grid.minor = element_blank()) 
 ```
 
