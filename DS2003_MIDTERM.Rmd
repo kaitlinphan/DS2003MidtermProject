@@ -1,0 +1,199 @@
+---
+title: "Analysis of Global Video Game Sales since 2000"
+author: "Matthew Spalthoff, Kaitlin Phan, Renee Hebert"
+date: "2023-03-14"
+output:
+  html_document:
+    toc: TRUE
+    theme: journal
+    toc_float: TRUE
+editor_options: 
+  chunk_output_type: console
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+```{r, include=FALSE}
+library(tidyverse)
+```
+
+## Introduction/Abstract
+Since the 1970’s with the arrival of the first widespread video game called Pong, people all around the world have been fascinated with video games. From arcades to the Wii, and from Playstation to Xbox, billions of people of all walks of life have played video games across many genres and platforms. In our report, we look at video games sales from top publishers through the years and what types of games sell the best across different regions. 
+
+## Dataset Summary
+We chose the Global Video Game Sales dataset from Kaggle, which lists video games with sales greater than 100,000 copies. The dataset was generated from a scrape of vgchartz.com. 
+Columns used:
+```{r}
+# https://www.kaggle.com/datasets/thedevastator/global-video-game-sales?select=vgsales.csv
+
+Column = c("Publisher", "NA_Sales", "EU_Sales", "JP_Sales", "Other_Sales", "Global_Sales", "Year", "Genre")
+Definition = c("Publisher of the game", "Sales in North America (in millions)", "Sales in Europe (in millions)", "Sales in Japan (in millions)", "Sales in the rest of the world (in millions)", "Total worldwide sales (in millions)", "Year the game was published", "Genre of the game")
+Numerical_Summary = c("Character datatype", "Min: 0, 1st Qu: 0, Med: 0.0800, Mean: 0.2647, 3rd Qu: 0.2400, Max: 41.4900", "Min: 0, 1st Qu: 0, Med: 0.0200, Mean: 0.1467, 3rd Qu: 0.1100, Max: 29.0200", "Min: 0, 1st Qu: 0, Med: 0.0000, Mean: 0.07778, 3rd Qu: 0.04000, Max: 10.22000", "Min: 0, 1st Qu.: 0.00000, Median: 0.01000, Mean: 0.04806, 3rd Qu.: 0.04000, Max: 10.57000", "Min: 0.0100, 1st Qu.: 0.0600, Median: 0.1700, Mean: 0.5374, 3rd Qu.: 0.4700, Max: 82.7400", "Factor, Min: 2000, Max: 2020", "Character datatype")
+
+data_sum = data.frame(Column, Definition, Numerical_Summary)
+data_sum
+```
+Unused columns:
+ - Rank: Ranking based on overall sales
+ - Name: Name of each game
+ - Platform: Platform of the game’s release
+
+## Question 1:
+### Question
+How have the top 10 video games publishers' sales changed over the course of video gaming’s most popular years (2000 - 2016)?
+
+### Prediction
+We predict that generally, all of the top publishers’ sales will increase dramatically over the course of the 17 years.
+
+### Chart and Chart Caption
+```{r}
+vgsales = read.csv("C:/Users/matth/OneDrive/Documents/UVA/Third Year/DS 2003/vgsales.csv")
+vgsales$Year = as.numeric(vgsales$Year)
+
+vgsales_year = subset(vgsales, Year <= 2016 & Year >= 2000)
+vg_pub = data.frame(table(vgsales_year$Publisher))
+vg_pub = vg_pub[order(-vg_pub$Freq), ]
+vg_pub = vg_pub[c(1:21),]
+vg_pub = vg_pub[-17, ]
+
+vgsales_pub = vgsales_year[vgsales_year$Publisher %in% vg_pub$Var1, ]
+
+vg_pub_10 = vg_pub[c(1:10),]
+vgsales_pub_10 = vgsales_year[vgsales_year$Publisher %in% vg_pub_10$Var1, ]
+
+p1 = ggplot(vgsales_pub_10, aes(x = Year, y = Global_Sales, fill = Publisher)) + 
+  geom_smooth(aes(color = Publisher), se = F)  + 
+  scale_color_brewer(palette = "Spectral") + 
+  theme_bw() + 
+  labs(title = "Top 10 Publisher Global Sales over Time",
+       subtitle = "From 2000 to 2016") + 
+       xlab("Year") + 
+       ylab("Global Sales (in Millions)")
+p1
+
+# This chart is a line chart representing the top 10 publishers’ global sales over 17 years from 2000 to 2016 (with THQ only extending to 2013).
+```
+
+### Discussion and Conclusion
+We selected the more recent years with the most data to display how different publishers’ global sales have changed over time. It appears that 3 publishers (Activision, EA, and Ubisoft) have generally increased their sales over time, 3 publishers (Sega, Namco, and THQ) have generally decrease their sales over time, and the remaining 3 publishers (Take-Two, Sony, and Konami) have remained the same over time. The outlier would be Nintendo, having a large spike in sales in 2007 and having the highest sales across all years. 
+
+### Chart Justification
+With the selection of about 17 years of popular video game sales, we expected a major increase in video game sales for all the companies, but that was not the case for these 10 popular publishers. While the general trend overall could be an increase, it is in no way dramatic, as some publishers hardly increased, did not increase, or decreased in their sales over time. This could be for a multitude of reasons, such as different compatible consoles that releases could be more or less popular, the type of game was phased out, or a more popular game from another publisher not on the graph could have caused any of the decreases seen. 
+
+## Question 2:
+### Question
+What is the breakdown of popularity of video game genres over different sales regions?
+
+### Prediction 
+We predict that the popular video game genres trend in different directions with the North American (NA) region versus the Japanese (JA) region.
+
+### Chart and Chart Caption
+```{r}
+vg_past20years <- vgsales %>% 
+  filter(Year %in% (2000:2020))
+
+vg_past20years <- vg_past20years %>%
+  summarize(Year, Genre, JP_Sales, NA_Sales, EU_Sales, Other_Sales, Global_Sales) %>%
+  pivot_longer((!Year & !Genre), names_to = 'Region', values_to = 'Sales')
+
+summed_vg_1 <- vg_past20years %>%
+  group_by(Genre, Region) %>%
+  summarize(Sales = sum(Sales)) 
+summed_vg_1 %>%
+  ggplot(aes(x=Genre, y=Sales, group = Region, fill=Region)) +
+    geom_bar(stat='identity', position='dodge') +
+  ylab('Sales ($ in million)') +
+  theme_bw() +
+  theme(axis.text.x = element_text(angle = 90, vjust = 0.5, hjust=1)) +
+  labs(title = "Sales of Video Games of Different Genres by Region", subtitle ="2000-2020")
+
+# This bar chart is used to examine the distribution of video game sales of different genres by region from 2000-2020.
+```
+
+### Discussion and Conclusion
+With the difference in culture between the east and the west, we expected genre trends to be different in North America compared to Japan. From the chart, you can see that Role Playing is a very popular genre in Japan, having more sales than North America, despite a population difference. On the other hand, Shooter games are a lot less popular in Japan while being more prevalent in North America.
+
+### Chart Justification 
+The grouped bar chart was selected because we wanted to look at categorical data (i.e. genre). Using the grouped bar chart allows you to make direct comparisons on the same chart by region, which makes it easier to answer our research question of what genres are more popular by region. 
+
+## Further Exploration: a Culmination of Previous Questions
+### Questions 
+What is the distribution of sales by region for the top 5 publishers, and how have they changed over the course of 15 years (2001-2015)? Are there any noticeable outliers? Are any new trends noticeable by exploring both research trends at once?
+
+### Prediciton 
+We predict that publisher success and range of sales will vary by region, as well as temporally with the varying success of different platforms.
+
+### Charts and Chart Captions
+```{r}
+vg_pub = subset(vgsales, (Rank <= 50 & Year >= 2000), select = c(Publisher, NA_Sales, EU_Sales, JP_Sales, Other_Sales, Global_Sales, Year))
+preset_jitter <- position_jitter(0.05, seed = 123) 
+
+
+ggplot(vg_pub, aes(Publisher,Global_Sales)) + 
+  geom_violin() + 
+  geom_point(aes(color = Year), position = preset_jitter) + 
+  theme_bw() + 
+  theme(axis.text.x = element_text(angle = 90, vjust = 0.5, hjust=1)) + 
+  labs(title="Distribution of Global Sales by Publisher for Top 50 Games by Sales",  subtitle = '2001-2015',caption = "Red line represents mean of total global sales", y = "Global Sales (millions)") + 
+  geom_hline(aes(yintercept=mean(vg_pub$Global_Sales)), color="red", linetype="dashed")
+
+# This chart is a violin chart used to visualize the distribution of global sales for the publishers of the top 50 games (by sales) between 2001-2015. The mean of the global sales was also included for better comparison across publishers.
+```
+
+```{r}
+ggplot(vg_pub, aes(Publisher,NA_Sales)) + 
+  geom_violin() + 
+  geom_point(aes(color = Year),position = preset_jitter) + 
+  theme_bw() + 
+  theme(axis.text.x = element_text(angle = 90, vjust = 0.5, hjust=1)) + 
+  labs(title="Distribution of North American Sales by Publisher for Top 50 Games by Sales",  subtitle = '2001-2015',caption = "Red line represents mean of total North American sales", y = "North American Sales (millions)") + 
+  geom_hline(aes(yintercept=mean(vg_pub$NA_Sales)), color="red", linetype="dashed")
+
+# This chart is a violin chart used to visualize the distribution and mean of North American sales for the publishers of the top 50 games (by sales) between 2001-2015. This was built with the intention of comparing these sales across regions and globally.
+```
+
+```{r}
+ggplot(vg_pub, aes(Publisher,EU_Sales)) + 
+  geom_violin() + 
+  geom_point(aes(color = Year), position = preset_jitter) + 
+  theme_bw() + 
+  theme(axis.text.x = element_text(angle = 90, vjust = 0.5, hjust=1)) + 
+  labs(title="Distribution of European Sales by Publisher for Top 50 Games by Sales", y = "European Sales")+ labs(title="Distribution of European Sales by Publisher for Top 50 Games by Sales",caption = "Red line represents mean of total European sales", y = "European Sales (millions)") + 
+  geom_hline(aes(yintercept=mean(vg_pub$EU_Sales)), color="red", linetype="dashed")
+
+# This chart is a violin chart used to visualize the distribution and mean of European sales for the publishers of the top 50 games (by sales) between 2001-2015. This was built with the intention of comparing these sales across regions and globally.
+```
+
+```{r}
+ggplot(vg_pub, aes(Publisher,JP_Sales)) + 
+  geom_violin() + 
+  geom_point(aes(color = Year), position = preset_jitter) + 
+  theme_bw()+ 
+  theme(axis.text.x = element_text(angle = 90, vjust = 0.5, hjust=1)) + 
+  labs(title="Distribution of Japanese Sales by Publisher for Top 50 Games by Sales",  subtitle = '2001-2015',caption = "Red line represents mean of total Japanese sales", y = "Japanese Sales (millions)") + 
+  geom_hline(aes(yintercept=mean(vg_pub$JP_Sales)), color="red", linetype="dashed") 
+
+# This chart is a violin chart used to visualize the distribution and mean of Japanese sales for the publishers of the top 50 games (by sales) between 2001-2015. This was built with the intention of comparing these sales across regions and globally.
+```
+
+```{r}
+ggplot(vg_pub, aes(Publisher,Other_Sales)) + 
+  geom_violin() + 
+  geom_point(aes(color = Year), position = preset_jitter) + 
+  theme_bw() + 
+  theme(axis.text.x = element_text(angle = 90, vjust = 0.5, hjust=1)) + 
+  labs(title="Distribution of Other Sales by Publisher for Top 50 Games by Sales",  subtitle = '2001-2015',caption = "Red line represents mean of total other sales (excludes North America, Europe, and Japan)", y = "Other Sales (millions)") + 
+  geom_hline(aes(yintercept=mean(vg_pub$Other_Sales)), color="red", linetype="dashed")
+
+# This chart is a violin chart used to visualize the distribution and mean of Other Regional sales for the publishers of the top 50 games (by sales) between 2001-2015. This was built with the intention of comparing these sales across regions and globally.
+```
+
+### Discussion and Conclusions
+Across the board, Nintendo largely experienced the greatest range of video game sales, largely due to a huge jump in sales in 2007. This is visualized by the length of the Nintendo section of the violin plots, as well as the mean line for several of the violin plots being found at or above the maximum value for several of the other publishers in several of the plots. This is likely due to a skewing of the mean by the high sales and outliers from Nintendo. This outlier in 2007 correlates with the release of the Wii, one of Nintendo’s most popular gaming consoles. It is only in sales for the other regions of the world (which excludes North America, Europe, and Japan) that the range of video game sales was similar to that of Nintendo. In addition, in Japan in particular, Nintendo’s sales were far above the mean for all Japan sales, and far exceeded the sales by the other top 5 publishers. This is likely due to the fact that Nintendo is a Japanese based company, which likely contributed to its popularity in its country of origin. The global sales also showed a similar pattern with Nintendo, even when taking into account the global mean and excluding the outlier in 2007. Lastly, for all graphs, there are visibly more data points for Nintendo within the top 50 ranked games.
+
+### Charts Justifications 
+Violin plots were used to visualize the distribution of global sales by the publishers for the top 50 ranked games. Regional sales plots were also made to see how the different regions varied in comparison to overall global sales. The global mean (and for each specific region) for the sales was also added to gain perspective on the overall sales. Attempts were made to facet_wrap the regional graphs to make the report more concise, but this caused the data to become largely illegible. 
+
+
